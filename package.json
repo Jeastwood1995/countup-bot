@@ -1,0 +1,24 @@
+{
+  "name": "countup-bot",
+  "version": "1.0.0",
+  "description": "Discord count-up bot on Cloudflare Workers",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "register": "tsx src/register.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "discord-api-types": "^0.37.100",
+    "discord-interactions": "^4.1.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "@types/node": "^26.6.1",
+    "dotenv": "^16.4.5",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "wrangler": "^3.78.0"
+  }
+}

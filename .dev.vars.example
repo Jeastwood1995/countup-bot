@@ -1,0 +1,10 @@
+# Discord Credentials from https://discord.com/developers/applications
+DISCORD_APPLICATION_ID=your_discord_application_id
+DISCORD_PUBLIC_KEY=your_discord_public_key
+DISCORD_BOT_TOKEN=your_discord_bot_token
+
+# Optional: Guild ID for instant command registration during testing
+# DISCORD_GUILD_ID=your_discord_server_id
+
+# Optional: Discord API Base URL (defaults to https://discord.com/api/v10)
+DISCORD_API_BASE=https://discord.com/api/v10

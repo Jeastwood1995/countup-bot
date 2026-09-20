@@ -1,0 +1,15 @@
+name = "countup-bot"
+main = "src/index.ts"
+compatibility_date = "2024-09-01"
+
+[vars]
+DISCORD_API_BASE = "https://discord.com/api/v10"
+DISCORD_WEB_BASE = "https://discord.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "countup-db"
+database_id = "d6ec1261-0bee-4ee0-8a4f-aff52eb941e8"
+
+[triggers]
+crons = ["0 0 * * *"]
