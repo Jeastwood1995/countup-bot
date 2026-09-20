@@ -30,6 +30,9 @@ This document provides system context, technical architecture, invariants, and g
 ## 3. Repository Layout
 ```text
 countup-bot/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml            # CI/CD: Automated typecheck, deploy & command registration
 ├── AGENTS.md                     # Agent instruction and codebase context (this file)
 ├── README.md                     # Developer quickstart and human setup guide
 ├── package.json                  # Project scripts and dependencies
@@ -87,10 +90,12 @@ All commands must be executed within `C:\Users\Jumpi\Documents\dev-projects\disc
   npm run register
   ```
   Reads `.dev.vars` / `.env` and issues a `PUT` request to Discord's REST API (`/applications/{id}/commands` or guild commands).
-* **Deploy to Production**:
-  ```bash
-  npm run deploy
-  ```
+* **Deploy to Production (Automated & Manual)**:
+  * **Automated CI/CD**: Pushing to `main` triggers `.github/workflows/deploy.yml`, which executes `npm run typecheck`, deploys to Cloudflare via `cloudflare/wrangler-action@v3`, and registers slash commands via `npm run register`.
+  * **Manual / CLI Deploy**:
+    ```bash
+    npm run deploy
+    ```
 
 ---
 

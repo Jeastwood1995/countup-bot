@@ -69,12 +69,29 @@ npx ngrok http 8787
 ```
 Copy the public `https://*.ngrok-free.app` URL, go to your Discord App's **General Information** tab, and paste it into **Interactions Endpoint URL**.
 
-### 6. Deploy to Production
-Deploy the worker directly to Cloudflare:
+### 6. Automated Deployment & CI/CD (GitHub Actions)
+Deployments and Discord slash command registrations run automatically whenever code is pushed to the `main` branch via [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
+
+#### Required GitHub Secrets
+In your GitHub repository, navigate to **Settings** > **Secrets and variables** > **Actions** and add the following repository secrets:
+* `CLOUDFLARE_API_TOKEN`: Cloudflare API token created with the **Edit Cloudflare Workers** template.
+* `CLOUDFLARE_ACCOUNT_ID` *(Optional / Recommended)*: Your Cloudflare Account ID from the Workers & Pages dashboard sidebar.
+* `DISCORD_APPLICATION_ID`: Your Discord Application ID.
+* `DISCORD_BOT_TOKEN`: Your Discord Bot Token.
+* `DISCORD_GUILD_ID` *(Optional)*: Set to register slash commands instantly to a single test guild instead of globally.
+
+#### One-Time Cloudflare Worker Secrets Setup
+Ensure your runtime secrets are stored in Cloudflare (persists across all subsequent automated CI/CD deployments):
 ```bash
 npx wrangler secret put DISCORD_PUBLIC_KEY
 npx wrangler secret put DISCORD_BOT_TOKEN
 npx wrangler secret put DISCORD_APPLICATION_ID
+```
+
+#### Manual / Local Deployment
+You can also deploy manually at any time using:
+```bash
 npm run deploy
 ```
+
 Copy your production `https://countup-bot.<your-subdomain>.workers.dev` URL and set it as your **Interactions Endpoint URL** in the Discord Developer Portal!

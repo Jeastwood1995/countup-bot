@@ -120,9 +120,11 @@ async function registerCommands() {
     } else {
       const errorText = await response.text();
       console.error(`❌ Registration failed (${response.status}):`, errorText);
+      process.exit(1);
     }
   } catch (err) {
     console.error('❌ Network error while registering commands:', err);
+    process.exit(1);
   }
 }
 
