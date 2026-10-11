@@ -15,9 +15,8 @@ database_id = "d6ec1261-0bee-4ee0-8a4f-aff52eb941e8"
 crons = ["0 0 * * *"]
 
 [observability]
-enabled = false
+enabled = true
 head_sampling_rate = 1
-redact_query_string = false
 
 [observability.logs]
 enabled = true
@@ -29,3 +28,9 @@ persist = true
 enabled = true
 head_sampling_rate = 1
 persist = true
+
+[observability.issues]
+enabled = true
+
+upload_source_maps = true
+

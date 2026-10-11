@@ -52,38 +52,89 @@ export class DiscordService implements IDiscordService {
   async editMessage(
     channelId: string,
     messageId: string,
-    content: string
+    content: string,
+    maxRetries: number = 3
   ): Promise<EditMessageResult> {
     const url = this.endpoints.channelMessage(channelId, messageId);
 
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const res = await fetch(url, {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bot ${this.botToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content }),
+        });
+
+        if (res.ok) {
+          return { success: true };
+        }
+
+        const errorText = await res.text();
+
+        // If rate limited, wait and retry
+        if (res.status === 429 && attempt < maxRetries) {
+          let retryAfterMs = 1000;
+          try {
+            const data = JSON.parse(errorText);
+            if (data.retry_after) {
+              retryAfterMs = Math.ceil(Number(data.retry_after) * 1000);
+            }
+          } catch {}
+          console.warn(`[DiscordService] 429 Rate limited editing message ${messageId}. Retrying in ${retryAfterMs}ms...`);
+          await new Promise((r) => setTimeout(r, retryAfterMs));
+          continue;
+        }
+
+        return {
+          success: false,
+          notFound: res.status === 404 || res.status === 403,
+          errorText,
+          status: res.status,
+        };
+      } catch (err: any) {
+        if (attempt < maxRetries) {
+          await new Promise((r) => setTimeout(r, 500 * attempt));
+          continue;
+        }
+        return {
+          success: false,
+          notFound: false,
+          errorText: err?.message || 'Network error',
+          status: 0,
+        };
+      }
+    }
+
+    return {
+      success: false,
+      notFound: false,
+      errorText: 'Max retries exceeded',
+      status: 0,
+    };
+  }
+
+  /**
+   * Edit the original interaction response message via webhook URL
+   */
+  async editOriginalMessage(
+    applicationId: string,
+    interactionToken: string,
+    content: string
+  ): Promise<boolean> {
+    const url = this.endpoints.originalMessage(applicationId, interactionToken);
     try {
       const res = await fetch(url, {
         method: 'PATCH',
-        headers: {
-          Authorization: `Bot ${this.botToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
       });
-
-      if (res.ok) {
-        return { success: true };
-      }
-
-      const errorText = await res.text();
-      return {
-        success: false,
-        notFound: res.status === 404 || res.status === 403,
-        errorText,
-        status: res.status,
-      };
-    } catch (err: any) {
-      return {
-        success: false,
-        notFound: false,
-        errorText: err?.message || 'Network error',
-        status: 0,
-      };
+      return res.ok;
+    } catch (err) {
+      console.error('[DiscordService] Failed to edit original interaction response:', err);
+      return false;
     }
   }
 }

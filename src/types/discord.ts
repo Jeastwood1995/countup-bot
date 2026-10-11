@@ -21,4 +21,10 @@ export interface IDiscordService {
     messageId: string,
     content: string
   ): Promise<EditMessageResult>;
+
+  editOriginalMessage(
+    applicationId: string,
+    interactionToken: string,
+    content: string
+  ): Promise<boolean>;
 }

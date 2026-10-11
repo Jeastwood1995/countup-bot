@@ -24,6 +24,7 @@ export interface ITrackerRepository {
   save(tracker: NewTracker): Promise<void>;
   findAll(): Promise<Tracker[]>;
   findByGuild(guildId: string, limit?: number): Promise<Tracker[]>;
+  findByMessageId(messageId: string): Promise<Tracker | null>;
   deleteByMessageId(messageId: string): Promise<boolean>;
   deleteById(id: string): Promise<boolean>;
   updateLastUpdated(id: string, timestamp?: number): Promise<void>;

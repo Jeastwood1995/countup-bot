@@ -103,13 +103,32 @@ export default {
 
       // --- COMMAND: /countup-sync ---
       if (name === 'countup-sync') {
-        const stats = await trackerService.syncAll();
+        const appId = interaction.application_id;
+        const token = interaction.token;
+
+        ctx.waitUntil(
+          (async () => {
+            try {
+              const stats = await trackerService.syncAll();
+              await discordService.editOriginalMessage(
+                appId,
+                token,
+                `🔄 **Manual Recalculation Sync Finished**:\n- Total Trackers in DB: **${stats.total}**\n- Successfully Updated: **${stats.updated}**\n- Pruned (Deleted/Inaccessible): **${stats.pruned}**\n- Failed: **${stats.failed}**`
+              );
+            } catch (err) {
+              console.error('[CountupSync] Error during background sync:', err);
+              await discordService.editOriginalMessage(
+                appId,
+                token,
+                '⚠️ An error occurred during manual recalculation sync.'
+              );
+            }
+          })()
+        );
+
         return jsonResponse({
-          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: {
-            content: `🔄 **Manual Recalculation Sync Finished**:\n- Total Trackers in DB: **${stats.total}**\n- Successfully Updated: **${stats.updated}**\n- Pruned (Deleted/Inaccessible): **${stats.pruned}**\n- Failed: **${stats.failed}**`,
-            flags: 64,
-          },
+          type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+          data: { flags: 64 },
         });
       }
 

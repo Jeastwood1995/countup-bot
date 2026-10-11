@@ -112,12 +112,38 @@ export class TrackerService implements ITrackerService {
       return { total: 0, updated: 0, pruned: 0, failed: 0 };
     }
 
-    console.log(`[TrackerService] Updating ${trackers.length} active tracker(s)...`);
+    // Deduplicate by message_id in case duplicate rows were created
+    const uniqueTrackers = new Map<string, typeof trackers[0]>();
+    const duplicateIdsToDelete: string[] = [];
+
+    for (const tracker of trackers) {
+      const existing = uniqueTrackers.get(tracker.message_id);
+      if (!existing) {
+        uniqueTrackers.set(tracker.message_id, tracker);
+      } else {
+        // If existing has no label but this duplicate does, keep this one
+        if (!existing.label && tracker.label) {
+          duplicateIdsToDelete.push(existing.id);
+          uniqueTrackers.set(tracker.message_id, tracker);
+        } else {
+          duplicateIdsToDelete.push(tracker.id);
+        }
+      }
+    }
+
+    // Self-heal: automatically remove duplicate rows from D1
+    for (const dupId of duplicateIdsToDelete) {
+      console.log(`🧹 [TrackerService] Pruning duplicate tracker entry ID: ${dupId}`);
+      await this.repository.deleteById(dupId);
+    }
+
+    const activeTrackers = Array.from(uniqueTrackers.values());
+    console.log(`[TrackerService] Updating ${activeTrackers.length} active tracker(s)...`);
     let updated = 0;
     let pruned = 0;
     let failed = 0;
 
-    for (const tracker of trackers) {
+    for (const tracker of activeTrackers) {
       const calculation = this.countupService.calculate(tracker.target_date, tracker.label, true);
       if (!calculation.content) continue;
 
@@ -144,7 +170,7 @@ export class TrackerService implements ITrackerService {
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
 
-    return { total: trackers.length, updated, pruned, failed };
+    return { total: activeTrackers.length, updated, pruned, failed };
   }
 
   /**
@@ -168,7 +194,17 @@ export class TrackerService implements ITrackerService {
       };
     }
 
-    const trackerLines = trackers.map((t, idx) => {
+    // Deduplicate in list view
+    const uniqueTrackers = new Map<string, typeof trackers[0]>();
+    for (const t of trackers) {
+      const existing = uniqueTrackers.get(t.message_id);
+      if (!existing || (!existing.label && t.label)) {
+        uniqueTrackers.set(t.message_id, t);
+      }
+    }
+    const deduplicated = Array.from(uniqueTrackers.values());
+
+    const trackerLines = deduplicated.map((t, idx) => {
       const title = t.label ? `**${t.label}**` : '*Untitled*';
       const link = this.endpoints.messageLink(t.guild_id, t.channel_id, t.message_id);
       return `${idx + 1}. ${title} (since \`${t.target_date}\`)\n   🔗 [Jump to Message](${link}) • ID: \`${t.message_id}\``;
@@ -176,7 +212,7 @@ export class TrackerService implements ITrackerService {
 
     return {
       success: true,
-      message: `📋 **Active Milestone Trackers (${trackers.length})**:\n\n${trackerLines.join('\n\n')}\n\n*To stop tracking any milestone, run \`/countup-untrack message_id: <ID>\`.*`,
+      message: `📋 **Active Milestone Trackers (${deduplicated.length})**:\n\n${trackerLines.join('\n\n')}\n\n*To stop tracking any milestone, run \`/countup-untrack message_id: <ID>\`.*`,
       flags: 64,
     };
   }
