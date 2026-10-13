@@ -45,13 +45,14 @@ Fill in the values from your [Discord Developer Portal](https://discord.com/deve
 * `DISCORD_GUILD_ID` *(Optional, for instant server-specific command testing)*
 
 ### 3. Initialize Cloudflare D1 Database
-Create the database and apply the schema:
+Create the database and apply migrations:
 ```bash
 npx wrangler d1 create countup-db
-npx wrangler d1 execute countup-db --remote --file=./src/db/schema.sql
-npx wrangler d1 execute countup-db --local --file=./src/db/schema.sql
+npm run migrate:remote
+npm run migrate:local
 ```
-*(If upgrading an existing database, run `npx wrangler d1 execute countup-db --remote --command="ALTER TABLE trackers ADD COLUMN image_urls TEXT;"`)*
+*(Migrations in `migrations/` are also automatically checked and applied in GitHub Actions CI/CD on every push to `main`)*
+
 
 
 ### 4. Register Slash Commands

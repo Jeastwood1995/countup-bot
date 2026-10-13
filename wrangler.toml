@@ -11,6 +11,8 @@ GALLERY_ANCHOR_URL = "https://discord.com"
 binding = "DB"
 database_name = "countup-db"
 database_id = "d6ec1261-0bee-4ee0-8a4f-aff52eb941e8"
+migrations_dir = "migrations"
+
 
 [triggers]
 crons = ["0 0 * * *"]

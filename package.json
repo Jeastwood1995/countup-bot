@@ -7,7 +7,9 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "register": "tsx src/register.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migrate:local": "wrangler d1 migrations apply countup-db --local",
+    "migrate:remote": "wrangler d1 migrations apply countup-db --remote"
   },
   "dependencies": {
     "discord-api-types": "^0.37.100",

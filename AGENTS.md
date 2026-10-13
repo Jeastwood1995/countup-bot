@@ -76,9 +76,13 @@ All commands must be executed within `C:\Users\Jumpi\Documents\dev-projects\disc
   ```bash
   npm run typecheck
   ```
-* **Run Database Migrations**:
+* **Run Database Migrations (Automated in CI/CD, or manual)**:
   ```bash
-  npx wrangler d1 execute countup-db --remote --file=./src/db/schema.sql
+  npm run migrate:remote
+  ```
+  Or locally:
+  ```bash
+  npm run migrate:local
   ```
 * **Run Local Worker**:
   ```bash
