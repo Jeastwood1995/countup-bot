@@ -7,6 +7,7 @@ export interface Tracker {
   message_id: string;
   target_date: string;
   label: string | null;
+  image_urls: string | null;
   created_at: number;
   last_updated_at: number | null;
 }
@@ -18,6 +19,7 @@ export interface NewTracker {
   messageId: string;
   targetDate: string;
   label?: string | null;
+  imageUrls?: string[] | null;
 }
 
 export interface ITrackerRepository {
@@ -36,6 +38,7 @@ export interface TrackExistingParams {
   messageId: string;
   dateStr: string;
   label?: string | null;
+  imageUrls?: string[] | null;
 }
 
 export interface ServiceResult {
@@ -49,7 +52,8 @@ export interface ITrackerService {
   trackOriginalInteraction(
     interaction: any,
     dateStr: string,
-    label?: string | null
+    label?: string | null,
+    imageUrls?: string[] | null
   ): Promise<void>;
   syncAll(): Promise<UpdateJobResult>;
   list(guildId: string): Promise<ServiceResult>;

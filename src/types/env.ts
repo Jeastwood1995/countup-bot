@@ -4,5 +4,7 @@ export interface Env {
   DISCORD_APPLICATION_ID: string;
   DISCORD_API_BASE?: string;
   DISCORD_WEB_BASE?: string;
+  GALLERY_ANCHOR_URL?: string;
   DB: D1Database;
 }
+

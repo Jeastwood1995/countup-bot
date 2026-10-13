@@ -1,5 +1,5 @@
 import { DiscordEndpoints } from './discord.endpoints';
-import { EditMessageResult, IDiscordService, IDiscordEndpoints } from '../types/discord';
+import { EditMessageResult, IDiscordService, IDiscordEndpoints, MessagePayload } from '../types/discord';
 
 export { EditMessageResult };
 
@@ -52,10 +52,11 @@ export class DiscordService implements IDiscordService {
   async editMessage(
     channelId: string,
     messageId: string,
-    content: string,
+    payload: MessagePayload,
     maxRetries: number = 3
   ): Promise<EditMessageResult> {
     const url = this.endpoints.channelMessage(channelId, messageId);
+    const requestBody = typeof payload === 'string' ? { content: payload } : payload;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -65,7 +66,7 @@ export class DiscordService implements IDiscordService {
             Authorization: `Bot ${this.botToken}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ content }),
+          body: JSON.stringify(requestBody),
         });
 
         if (res.ok) {
@@ -122,14 +123,15 @@ export class DiscordService implements IDiscordService {
   async editOriginalMessage(
     applicationId: string,
     interactionToken: string,
-    content: string
+    payload: MessagePayload
   ): Promise<boolean> {
     const url = this.endpoints.originalMessage(applicationId, interactionToken);
+    const requestBody = typeof payload === 'string' ? { content: payload } : payload;
     try {
       const res = await fetch(url, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(requestBody),
       });
       return res.ok;
     } catch (err) {

@@ -18,8 +18,8 @@ A serverless Discord bot built with **TypeScript**, **Cloudflare Workers**, and 
 
 | Command | Description |
 | :--- | :--- |
-| `/countup date: YYYY-MM-DD [label] [track]` | Calculate elapsed days. Set `track: True` to automatically update daily at 00:00 UTC. |
-| `/countup-track-existing message_id: <ID> date: YYYY-MM-DD [label]` | Convert an existing countup message into a tracked milestone and update it immediately. |
+| `/countup date: YYYY-MM-DD [label] [track] [image] [image2] [image3] [image4]` | Calculate elapsed days. Supports up to 4 photos rendered in a Discord collage gallery. Set `track: True` to auto-update daily at 00:00 UTC. |
+| `/countup-track-existing message_id: <ID> date: YYYY-MM-DD [label] [image] [image2] [image3] [image4]` | Convert an existing countup message into a tracked milestone and update it immediately with optional images. |
 | `/countup-sync` | Manually trigger daily recalculation on all tracked messages right now. |
 | `/countup-list` | List all active automated trackers in the server with direct links to messages. |
 | `/countup-untrack message_id: <ID>` | Stop automatic daily updates for a milestone message. |
@@ -51,6 +51,8 @@ npx wrangler d1 create countup-db
 npx wrangler d1 execute countup-db --remote --file=./src/db/schema.sql
 npx wrangler d1 execute countup-db --local --file=./src/db/schema.sql
 ```
+*(If upgrading an existing database, run `npx wrangler d1 execute countup-db --remote --command="ALTER TABLE trackers ADD COLUMN image_urls TEXT;"`)*
+
 
 ### 4. Register Slash Commands
 Publish commands to Discord:

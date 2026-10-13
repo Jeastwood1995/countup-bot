@@ -39,6 +39,30 @@ const COMMANDS = [
         type: 5, // BOOLEAN
         required: false,
       },
+      {
+        name: 'image',
+        description: 'Optional photo, GIF, or memory image',
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: 'image2',
+        description: 'Optional 2nd photo for a gallery grid',
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: 'image3',
+        description: 'Optional 3rd photo for a gallery grid',
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: 'image4',
+        description: 'Optional 4th photo for a gallery grid',
+        type: 11, // ATTACHMENT
+        required: false,
+      },
     ],
   },
   {
@@ -61,6 +85,30 @@ const COMMANDS = [
         name: 'label',
         description: 'Optional name for this memory (e.g. BTS live with honey)',
         type: 3, // STRING
+        required: false,
+      },
+      {
+        name: 'image',
+        description: 'Optional photo, GIF, or memory image',
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: 'image2',
+        description: 'Optional 2nd photo for a gallery grid',
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: 'image3',
+        description: 'Optional 3rd photo for a gallery grid',
+        type: 11, // ATTACHMENT
+        required: false,
+      },
+      {
+        name: 'image4',
+        description: 'Optional 4th photo for a gallery grid',
+        type: 11, // ATTACHMENT
         required: false,
       },
     ],

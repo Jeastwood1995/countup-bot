@@ -21,18 +21,27 @@ export class TrackerRepository implements ITrackerRepository {
     const now = Date.now();
     const existing = await this.findByMessageId(tracker.messageId);
 
+    const imageUrlsJson =
+      tracker.imageUrls && tracker.imageUrls.length > 0
+        ? JSON.stringify(tracker.imageUrls)
+        : null;
+
     if (existing) {
       // Preserve existing label if newly provided label is undefined
       const label = tracker.label !== undefined ? tracker.label : existing.label;
+      const imageUrls =
+        tracker.imageUrls !== undefined ? imageUrlsJson : existing.image_urls;
+
       await this.db.prepare(
         `UPDATE trackers
-         SET guild_id = ?, channel_id = ?, target_date = ?, label = ?, last_updated_at = ?
+         SET guild_id = ?, channel_id = ?, target_date = ?, label = ?, image_urls = ?, last_updated_at = ?
          WHERE message_id = ?`
       ).bind(
         tracker.guildId,
         tracker.channelId,
         tracker.targetDate,
         label || null,
+        imageUrls || null,
         now,
         tracker.messageId
       ).run();
@@ -41,8 +50,8 @@ export class TrackerRepository implements ITrackerRepository {
 
     const id = tracker.id || crypto.randomUUID();
     await this.db.prepare(
-      `INSERT INTO trackers (id, guild_id, channel_id, message_id, target_date, label, created_at, last_updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO trackers (id, guild_id, channel_id, message_id, target_date, label, image_urls, created_at, last_updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       id,
       tracker.guildId,
@@ -50,6 +59,7 @@ export class TrackerRepository implements ITrackerRepository {
       tracker.messageId,
       tracker.targetDate,
       tracker.label || null,
+      imageUrlsJson,
       now,
       now
     ).run();

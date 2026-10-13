@@ -8,3 +8,7 @@ DISCORD_BOT_TOKEN=your_discord_bot_token
 
 # Optional: Discord API Base URL (defaults to https://discord.com/api/v10)
 DISCORD_API_BASE=https://discord.com/api/v10
+
+# Optional: Custom URL for collage gallery title links (defaults to https://discord.com)
+# GALLERY_ANCHOR_URL=https://discord.com
+

@@ -10,6 +10,8 @@ export interface IDiscordEndpoints {
   guildCommands(applicationId: string, guildId: string): string;
 }
 
+export type MessagePayload = string | { content?: string; embeds?: any[] };
+
 export interface IDiscordService {
   fetchOriginalMessage(
     applicationId: string,
@@ -19,12 +21,13 @@ export interface IDiscordService {
   editMessage(
     channelId: string,
     messageId: string,
-    content: string
+    payload: MessagePayload
   ): Promise<EditMessageResult>;
 
   editOriginalMessage(
     applicationId: string,
     interactionToken: string,
-    content: string
+    payload: MessagePayload
   ): Promise<boolean>;
 }
+

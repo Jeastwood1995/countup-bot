@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS trackers (
   message_id TEXT NOT NULL,
   target_date TEXT NOT NULL,
   label TEXT,
+  image_urls TEXT,
   created_at INTEGER NOT NULL,
   last_updated_at INTEGER
 );

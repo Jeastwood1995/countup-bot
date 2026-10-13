@@ -50,7 +50,7 @@ export default {
       // Instantiate services and repositories conforming to their contracts
       const endpoints = new DiscordEndpoints(env.DISCORD_API_BASE, env.DISCORD_WEB_BASE);
       const trackerRepo = new TrackerRepository(env.DB);
-      const countupService = new CountupService();
+      const countupService = new CountupService(env.GALLERY_ANCHOR_URL || env.DISCORD_WEB_BASE);
       const discordService = new DiscordService(env.DISCORD_BOT_TOKEN, endpoints);
       const trackerService = new TrackerService(trackerRepo, countupService, discordService, endpoints);
 
@@ -60,7 +60,25 @@ export default {
         const labelOption = options?.find((opt: any) => opt.name === 'label')?.value?.trim();
         const trackOption = Boolean(options?.find((opt: any) => opt.name === 'track')?.value);
 
-        const calculation = countupService.calculate(dateOption, labelOption, trackOption);
+        // Resolve up to 4 image attachments from interaction.data.resolved.attachments
+        const imageKeys = ['image', 'image2', 'image3', 'image4'];
+        const imageUrls: string[] = [];
+        for (const key of imageKeys) {
+          const attachmentId = options?.find((opt: any) => opt.name === key)?.value;
+          if (attachmentId && interaction.data?.resolved?.attachments?.[attachmentId]) {
+            const att = interaction.data.resolved.attachments[attachmentId];
+            if (att?.url) {
+              imageUrls.push(att.url);
+            }
+          }
+        }
+
+        const calculation = countupService.calculate(
+          dateOption,
+          labelOption,
+          trackOption,
+          imageUrls.length > 0 ? imageUrls : null
+        );
         if (calculation.error) {
           return jsonResponse({
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
@@ -70,13 +88,25 @@ export default {
 
         if (trackOption) {
           ctx.waitUntil(
-            trackerService.trackOriginalInteraction(interaction, dateOption, labelOption)
+            trackerService.trackOriginalInteraction(
+              interaction,
+              dateOption,
+              labelOption,
+              imageUrls.length > 0 ? imageUrls : null
+            )
           );
+        }
+
+        const responseData: any = {};
+        if (calculation.embeds && calculation.embeds.length > 0) {
+          responseData.embeds = calculation.embeds;
+        } else {
+          responseData.content = calculation.content;
         }
 
         return jsonResponse({
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-          data: { content: calculation.content },
+          data: responseData,
         });
       }
 
@@ -87,12 +117,25 @@ export default {
         const label = options?.find((opt: any) => opt.name === 'label')?.value?.trim();
         const channelId = interaction.channel_id || interaction.channel?.id;
 
+        const imageKeys = ['image', 'image2', 'image3', 'image4'];
+        const imageUrls: string[] = [];
+        for (const key of imageKeys) {
+          const attachmentId = options?.find((opt: any) => opt.name === key)?.value;
+          if (attachmentId && interaction.data?.resolved?.attachments?.[attachmentId]) {
+            const att = interaction.data.resolved.attachments[attachmentId];
+            if (att?.url) {
+              imageUrls.push(att.url);
+            }
+          }
+        }
+
         const result = await trackerService.trackExisting({
           guildId: interaction.guild_id || null,
           channelId,
           messageId,
           dateStr,
           label,
+          imageUrls: imageUrls.length > 0 ? imageUrls : null,
         });
 
         return jsonResponse({
@@ -161,7 +204,7 @@ export default {
 
     const endpoints = new DiscordEndpoints(env.DISCORD_API_BASE, env.DISCORD_WEB_BASE);
     const trackerRepo = new TrackerRepository(env.DB);
-    const countupService = new CountupService();
+    const countupService = new CountupService(env.GALLERY_ANCHOR_URL || env.DISCORD_WEB_BASE);
     const discordService = new DiscordService(env.DISCORD_BOT_TOKEN, endpoints);
     const trackerService = new TrackerService(trackerRepo, countupService, discordService, endpoints);
 

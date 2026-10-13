@@ -30,8 +30,14 @@ export class TrackerService implements ITrackerService {
       };
     }
 
-    const calculation = this.countupService.calculate(params.dateStr, params.label, true);
-    if (calculation.error || !calculation.content) {
+    const calculation = this.countupService.calculate(
+      params.dateStr,
+      params.label,
+      true,
+      params.imageUrls
+    );
+    const hasDisplayableOutput = Boolean(calculation.content || calculation.embeds?.length);
+    if (calculation.error || !hasDisplayableOutput) {
       return {
         success: false,
         message: calculation.error || '⚠️ Invalid date provided.',
@@ -39,10 +45,15 @@ export class TrackerService implements ITrackerService {
       };
     }
 
+    const payload =
+      calculation.embeds && calculation.embeds.length > 0
+        ? { embeds: calculation.embeds }
+        : calculation.content!;
+
     const editResult = await this.discordService.editMessage(
       params.channelId,
       params.messageId,
-      calculation.content
+      payload
     );
 
     if (!editResult.success) {
@@ -59,6 +70,7 @@ export class TrackerService implements ITrackerService {
       messageId: params.messageId,
       targetDate: params.dateStr,
       label: params.label || null,
+      imageUrls: params.imageUrls || null,
     });
 
     return {
@@ -74,7 +86,8 @@ export class TrackerService implements ITrackerService {
   async trackOriginalInteraction(
     interaction: any,
     dateStr: string,
-    label?: string | null
+    label?: string | null,
+    imageUrls?: string[] | null
   ): Promise<void> {
     const appId = interaction.application_id;
     const token = interaction.token;
@@ -95,6 +108,7 @@ export class TrackerService implements ITrackerService {
         messageId: msg.id,
         targetDate: dateStr,
         label: label || null,
+        imageUrls: imageUrls || null,
       });
       console.log(`✅ [TrackerService] Successfully saved tracker for message ${msg.id} in channel ${channelId}.`);
     } catch (err) {
@@ -144,13 +158,33 @@ export class TrackerService implements ITrackerService {
     let failed = 0;
 
     for (const tracker of activeTrackers) {
-      const calculation = this.countupService.calculate(tracker.target_date, tracker.label, true);
-      if (!calculation.content) continue;
+      let imageUrls: string[] | null = null;
+      if (tracker.image_urls) {
+        try {
+          imageUrls = JSON.parse(tracker.image_urls);
+        } catch (e) {
+          console.warn(`[TrackerService] Failed to parse image_urls for tracker ${tracker.id}`);
+        }
+      }
+
+      const calculation = this.countupService.calculate(
+        tracker.target_date,
+        tracker.label,
+        true,
+        imageUrls
+      );
+      const hasDisplayableOutput = Boolean(calculation.content || calculation.embeds?.length);
+      if (calculation.error || !hasDisplayableOutput) continue;
+
+      const payload =
+        calculation.embeds && calculation.embeds.length > 0
+          ? { embeds: calculation.embeds }
+          : calculation.content!;
 
       const res = await this.discordService.editMessage(
         tracker.channel_id,
         tracker.message_id,
-        calculation.content
+        payload
       );
 
       if (res.success) {
